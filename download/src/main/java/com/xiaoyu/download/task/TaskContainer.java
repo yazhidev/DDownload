@@ -6,14 +6,15 @@ import java.util.List;
  * Created by zengyazhi on 2018/4/2.
  */
 
-public class TaskBox {
+public class TaskContainer {
 
     List<BasicTask> tasks;
+    int lenghNum;
 
     long progress;
     volatile long length;
 
-    public TaskBox(List<BasicTask> tasks) {
+    public TaskContainer(List<BasicTask> tasks) {
         this.tasks = tasks;
     }
 
@@ -29,7 +30,14 @@ public class TaskBox {
         return length;
     }
 
-    public void setLength(long length) {
-        this.length = length;
+    public void addLength(long length) {
+        this.length += length;
+        lenghNum++;
     }
+
+    //总长度是否计算完成
+    public boolean isLengthCompletion() {
+        return lenghNum == tasks.size();
+    }
+
 }

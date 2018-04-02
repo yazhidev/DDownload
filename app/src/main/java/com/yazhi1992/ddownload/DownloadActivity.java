@@ -37,7 +37,7 @@ public class DownloadActivity extends AppCompatActivity {
 
         DownloadTask downloadTask = new DownloadTask(AppConstant.path, AppConstant.url);
         DownloadTask downloadTask2 = new DownloadTask(AppConstant.path2, AppConstant.url2);
-        DownloadTask downloadTask3 = new DownloadTask(AppConstant.path3, AppConstant.url2);
+        DownloadTask downloadTask3 = new DownloadTask(AppConstant.path3, AppConstant.url3);
 
         getFileSize(downloadTask, downloadTask2, downloadTask3);
 
@@ -67,28 +67,6 @@ public class DownloadActivity extends AppCompatActivity {
                     mModel.file1Size.set("下载完成，大小：" + DownloadUtils.transferSize(file.length()));
                 }
             });
-//
-//            XYDownload.getInstance().start(downloadTask, new DownloadCallback() {
-//                @Override
-//                public void update(long progress, long total) {
-//                    Log.e("zyz", "");
-//                    int percent = (int) (progress * 100 / total);
-//                    mModel.progress.set("进度：" + Integer.toString(percent) + "%");
-//
-//                    getFileSize(downloadTask);
-//                }
-//
-//                @Override
-//                public void onError(String msg, int code) {
-//                    Log.e("zyz", "onError");
-//                }
-//
-//                @Override
-//                public void onComplete() {
-//                    File file = new File(downloadTask.getSavePath());
-//                    mModel.file1Size.set("下载完成，大小：" + DownloadUtils.transferSize(file.length()));
-//                }
-//            });
         });
 
         mBinding.btnPause.setOnClickListener(v -> {
@@ -98,8 +76,11 @@ public class DownloadActivity extends AppCompatActivity {
 
         mBinding.btnDelete.setOnClickListener(v -> {
             deleteMyFile(AppConstant.path);
-            deleteMyFile(downloadTask.getTempFilePath());
             deleteMyFile(AppConstant.path2);
+            deleteMyFile(AppConstant.path3);
+            deleteMyFile(downloadTask.getTempFilePath());
+            deleteMyFile(downloadTask2.getTempFilePath());
+            deleteMyFile(downloadTask3.getTempFilePath());
             mModel.progress.set("");
             TaskCenter.getInstance().removeAll();
             getFileSize(downloadTask, downloadTask2, downloadTask2);

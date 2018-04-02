@@ -38,20 +38,11 @@ public class XYDownload {
         TaskCenter.getInstance().init(context);
     }
 
-    public void start(BasicTask task, DownloadCallback callback) {
-        getBinder(new GetBinderCallback() {
-            @Override
-            public void getBinder(DownloadService.DownloadBinder binder) {
-                mBinder.start(task, callback);
-            }
-        });
-    }
-
     public void start(List<BasicTask> tasks, DownloadCallback callback) {
         getBinder(new GetBinderCallback() {
             @Override
             public void getBinder(DownloadService.DownloadBinder binder) {
-                mBinder.startAll(tasks, callback);
+                mBinder.start(tasks, callback);
             }
         });
     }
