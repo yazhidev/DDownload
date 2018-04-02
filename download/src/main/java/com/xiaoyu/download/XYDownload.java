@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
+import com.xiaoyu.download.task.BasicTask;
+import com.xiaoyu.download.task.TaskCenter;
+
 import static android.content.Context.BIND_AUTO_CREATE;
 
 /**
@@ -30,9 +33,32 @@ public class XYDownload {
 
     public void init(Context context) {
         mContext = context;
+        TaskCenter.getInstance().init(context);
     }
 
-    public void start(String url, DownloadCallback callback) {
+    public void start(BasicTask task, DownloadCallback callback) {
+        getBinder(new GetBinderCallback() {
+            @Override
+            public void getBinder(DownloadService.DownloadBinder binder) {
+                mBinder.start(task, callback);
+            }
+        });
+    }
+
+    public void stopAll() {
+        getBinder(new GetBinderCallback() {
+            @Override
+            public void getBinder(DownloadService.DownloadBinder binder) {
+                mBinder.stopAll();
+            }
+        });
+    }
+
+    interface GetBinderCallback {
+        void getBinder(DownloadService.DownloadBinder binder);
+    }
+
+    private void getBinder(GetBinderCallback callback) {
         if (mBinder == null) {
             Intent intent = new Intent(mContext, DownloadService.class);
             mContext.startService(intent);
@@ -40,7 +66,7 @@ public class XYDownload {
                 @Override
                 public void onServiceConnected(ComponentName name, IBinder service) {
                     mBinder = (DownloadService.DownloadBinder) service;
-                    mBinder.start(callback);
+                    callback.getBinder(mBinder);
                 }
 
                 @Override
@@ -50,6 +76,6 @@ public class XYDownload {
             }, BIND_AUTO_CREATE);
             return;
         }
-        mBinder.start(callback);
+        callback.getBinder(mBinder);
     }
 }

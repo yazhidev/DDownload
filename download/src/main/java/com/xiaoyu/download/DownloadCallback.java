@@ -5,7 +5,9 @@ package com.xiaoyu.download;
  */
 
 public interface DownloadCallback {
-    void update(int progress, int total);
+    void update(long progress, long total);
 
     void onError(String msg, int code);
+
+    void onComplete();
 }

@@ -8,4 +8,7 @@ import android.databinding.ObservableField;
 
 public class DownloadModel {
     public ObservableField<String> progress = new ObservableField<>();
+
+    public ObservableField<String> file1Size = new ObservableField<>();
+
 }

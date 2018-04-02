@@ -1,7 +1,7 @@
 package com.xiaoyu.download;
 
 import com.xiaoyu.download.filter.IFilter;
-import com.xiaoyu.download.task.ITask;
+import com.xiaoyu.download.task.BasicTask;
 
 import java.util.List;
 
@@ -15,13 +15,15 @@ public interface IDownload {
 
     void start(List<String> urls);
 
-    void start(ITask task);
+    void start(BasicTask task);
 
     //开始执行所有队列中的任务
     void startAll();
 
+    void stopAll();
+
     //获取所有执行中的任务
-    List<ITask> getAllTasks();
+    List<BasicTask> getAllTasks();
 
     //本地是否有文件
     void isFinish();

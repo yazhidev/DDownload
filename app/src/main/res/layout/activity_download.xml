@@ -2,6 +2,7 @@
 <layout>
 
     <data>
+
         <variable
             name="model"
             type="com.yazhi1992.ddownload.DownloadModel"></variable>
@@ -15,13 +16,53 @@
         android:layout_height="match_parent"
         tools:context="com.yazhi1992.ddownload.DownloadActivity">
 
-        <TextView
-            android:id="@+id/tv_progress"
-            android:layout_centerInParent="true"
+        <LinearLayout
+            android:id="@+id/ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_weight="1"
+                android:text="@{model.file1Size}"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:layout_weight="1"
+                android:id="@+id/tv_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{model.progress}"
+                />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@{model.progress}"
-            />
+            android:layout_below="@+id/ll"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:text="开始"/>
+
+        <Button
+            android:id="@+id/btn_pause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/btn_start"
+            android:layout_centerHorizontal="true"
+            android:text="暂停"/>
+
+        <Button
+            android:id="@+id/btn_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/btn_pause"
+            android:layout_centerHorizontal="true"
+            android:text="删除"/>
 
     </RelativeLayout>
 </layout>
