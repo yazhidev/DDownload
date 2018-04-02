@@ -31,7 +31,6 @@
 
             <TextView
                 android:layout_weight="1"
-                android:id="@+id/tv_progress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@{model.progress}"
@@ -39,11 +38,43 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/ll2"
+            android:layout_below="@+id/ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_weight="1"
+                android:text="@{model.file1Size2}"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll3"
+            android:layout_below="@+id/ll2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_weight="1"
+                android:text="@{model.file1Size3}"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
         <Button
             android:id="@+id/btn_start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/ll"
+            android:layout_below="@+id/ll3"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="20dp"
             android:text="开始"/>

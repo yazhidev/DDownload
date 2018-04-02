@@ -9,6 +9,8 @@ import android.os.IBinder;
 import com.xiaoyu.download.task.BasicTask;
 import com.xiaoyu.download.task.TaskCenter;
 
+import java.util.List;
+
 import static android.content.Context.BIND_AUTO_CREATE;
 
 /**
@@ -41,6 +43,15 @@ public class XYDownload {
             @Override
             public void getBinder(DownloadService.DownloadBinder binder) {
                 mBinder.start(task, callback);
+            }
+        });
+    }
+
+    public void start(List<BasicTask> tasks, DownloadCallback callback) {
+        getBinder(new GetBinderCallback() {
+            @Override
+            public void getBinder(DownloadService.DownloadBinder binder) {
+                mBinder.startAll(tasks, callback);
             }
         });
     }

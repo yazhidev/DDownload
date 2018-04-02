@@ -14,7 +14,8 @@ public class BasicTask implements Serializable {
     protected String mSavePath;
     protected String mDownloadUrl;
     protected long mProgress;
-    protected long mTotal;
+    protected long mLength;
+    protected long mTotalLength;
 
     public BasicTask() {}
 
@@ -31,6 +32,14 @@ public class BasicTask implements Serializable {
             File tempFile = new File(mTempFilePath);
             setProgress(tempFile.length());
         }
+    }
+
+    public long getTotalLength() {
+        return mTotalLength;
+    }
+
+    public void setTotalLength(long totalLength) {
+        mTotalLength = totalLength;
     }
 
     public boolean isCanceld() {
@@ -74,16 +83,21 @@ public class BasicTask implements Serializable {
         mProgress = progress;
     }
 
-    public long getTotal() {
-        return mTotal;
+    public long getLength() {
+        return mLength;
     }
 
-    public void setTotal(long total) {
-        mTotal = total;
+    public void setLength(long length) {
+        mLength = length;
     }
 
-    public void updateTotal(long total) {
-        setTotal(total);
+    public void updateLength(long length) {
+        setLength(length);
+        TaskCenter.getInstance().updateLocalData();
+    }
+
+    public void updateTotalLength(long total) {
+        setTotalLength(total);
         TaskCenter.getInstance().updateLocalData();
     }
 }

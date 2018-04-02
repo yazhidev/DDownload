@@ -11,4 +11,8 @@ public class DownloadModel {
 
     public ObservableField<String> file1Size = new ObservableField<>();
 
+    public ObservableField<String> file1Size2 = new ObservableField<>();
+
+    public ObservableField<String> file1Size3 = new ObservableField<>();
+
 }

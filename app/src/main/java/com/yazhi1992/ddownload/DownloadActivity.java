@@ -8,13 +8,16 @@ import android.util.Log;
 import com.xiaoyu.download.AppConstant;
 import com.xiaoyu.download.DownloadCallback;
 import com.xiaoyu.download.DownloadTask;
+import com.xiaoyu.download.XYDownload;
+import com.xiaoyu.download.task.BasicTask;
 import com.xiaoyu.download.task.TaskCenter;
 import com.xiaoyu.download.util.DownloadUtils;
-import com.xiaoyu.download.XYDownload;
 import com.yazhi1992.ddownload.databinding.ActivityDownloadBinding;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -33,18 +36,24 @@ public class DownloadActivity extends AppCompatActivity {
         mBinding.setModel(mModel);
 
         DownloadTask downloadTask = new DownloadTask(AppConstant.path, AppConstant.url);
+        DownloadTask downloadTask2 = new DownloadTask(AppConstant.path2, AppConstant.url2);
+        DownloadTask downloadTask3 = new DownloadTask(AppConstant.path3, AppConstant.url2);
 
-        getFileSize(downloadTask);
+        getFileSize(downloadTask, downloadTask2, downloadTask3);
 
         mBinding.btnStart.setOnClickListener(v -> {
-            XYDownload.getInstance().start(downloadTask, new DownloadCallback() {
+            List<BasicTask> list = new ArrayList<>();
+            list.add(downloadTask);
+            list.add(downloadTask2);
+            list.add(downloadTask3);
+            XYDownload.getInstance().start(list, new DownloadCallback() {
                 @Override
                 public void update(long progress, long total) {
                     Log.e("zyz", "");
                     int percent = (int) (progress * 100 / total);
                     mModel.progress.set("进度：" + Integer.toString(percent) + "%");
 
-                    getFileSize(downloadTask);
+                    getFileSize(downloadTask, downloadTask2, downloadTask3);
                 }
 
                 @Override
@@ -58,10 +67,32 @@ public class DownloadActivity extends AppCompatActivity {
                     mModel.file1Size.set("下载完成，大小：" + DownloadUtils.transferSize(file.length()));
                 }
             });
+//
+//            XYDownload.getInstance().start(downloadTask, new DownloadCallback() {
+//                @Override
+//                public void update(long progress, long total) {
+//                    Log.e("zyz", "");
+//                    int percent = (int) (progress * 100 / total);
+//                    mModel.progress.set("进度：" + Integer.toString(percent) + "%");
+//
+//                    getFileSize(downloadTask);
+//                }
+//
+//                @Override
+//                public void onError(String msg, int code) {
+//                    Log.e("zyz", "onError");
+//                }
+//
+//                @Override
+//                public void onComplete() {
+//                    File file = new File(downloadTask.getSavePath());
+//                    mModel.file1Size.set("下载完成，大小：" + DownloadUtils.transferSize(file.length()));
+//                }
+//            });
         });
 
         mBinding.btnPause.setOnClickListener(v -> {
-            getFileSize(downloadTask);
+            getFileSize(downloadTask, downloadTask2, downloadTask2);
             XYDownload.getInstance().stopAll();
         });
 
@@ -71,7 +102,7 @@ public class DownloadActivity extends AppCompatActivity {
             deleteMyFile(AppConstant.path2);
             mModel.progress.set("");
             TaskCenter.getInstance().removeAll();
-            getFileSize(downloadTask);
+            getFileSize(downloadTask, downloadTask2, downloadTask2);
         });
     }
 
@@ -104,7 +135,7 @@ public class DownloadActivity extends AppCompatActivity {
         }
     }
 
-    private void getFileSize(DownloadTask downloadTask) {
+    private void getFileSize(DownloadTask downloadTask, DownloadTask downloadTask2, DownloadTask downloadTask3) {
         File file = new File(downloadTask.getSavePath());
         if(file.exists()) {
             mModel.file1Size.set("本地文件大小：" + DownloadUtils.transferSize(file.length()));
@@ -114,6 +145,30 @@ public class DownloadActivity extends AppCompatActivity {
                 mModel.file1Size.set("本地文件大小：" + DownloadUtils.transferSize(file1.length()));
             } else {
                 mModel.file1Size.set("本地文件大小：");
+            }
+        }
+
+        File file2 = new File(downloadTask2.getSavePath());
+        if(file2.exists()) {
+            mModel.file1Size2.set("本地文件大小：" + DownloadUtils.transferSize(file2.length()));
+        } else {
+            File file12 = new File(downloadTask2.getTempFilePath());
+            if(file12.exists()) {
+                mModel.file1Size2.set("本地文件大小：" + DownloadUtils.transferSize(file12.length()));
+            } else {
+                mModel.file1Size2.set("本地文件大小：");
+            }
+        }
+
+        File file3 = new File(downloadTask3.getSavePath());
+        if(file3.exists()) {
+            mModel.file1Size3.set("本地文件大小：" + DownloadUtils.transferSize(file3.length()));
+        } else {
+            File file13 = new File(downloadTask3.getTempFilePath());
+            if(file13.exists()) {
+                mModel.file1Size3.set("本地文件大小：" + DownloadUtils.transferSize(file13.length()));
+            } else {
+                mModel.file1Size3.set("本地文件大小：");
             }
         }
     }
