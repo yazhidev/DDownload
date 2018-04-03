@@ -6,8 +6,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
-import com.xiaoyu.download.task.BasicTask;
-import com.xiaoyu.download.task.TaskCenter;
+import com.xiaoyu.download.filter.FilterCallback;
+import com.xiaoyu.download.filter.FilterChain;
+import com.xiaoyu.download.filter.IFilter;
 
 import java.util.List;
 
@@ -21,12 +22,33 @@ public class XYDownload {
 
     private Context mContext;
     private DownloadService.DownloadBinder mBinder;
+    private FilterChain mAfterDownloadFilterChain;
+    private FilterChain mBeforeDownloadFilterChain;
+    private ProgressListener mProgressListener;
 
     private XYDownload() {
+        mBeforeDownloadFilterChain = new FilterChain();
+        mAfterDownloadFilterChain = new FilterChain();
     }
 
     private static class DownloadHolder {
         private static XYDownload INSTANCE = new XYDownload();
+    }
+
+    public ProgressListener getProgressListener() {
+        return mProgressListener;
+    }
+
+    public synchronized void setProgressListener(ProgressListener progressListener) {
+        mProgressListener = progressListener;
+    }
+
+    public void addAfterDownloadFilter(IFilter filter) {
+        mAfterDownloadFilterChain.add(filter);
+    }
+
+    public void addBeforeDownloadFilter(IFilter filter) {
+        mBeforeDownloadFilterChain.add(filter);
     }
 
     public static XYDownload getInstance() {
@@ -35,14 +57,45 @@ public class XYDownload {
 
     public void init(Context context) {
         mContext = context;
-        TaskCenter.getInstance().init(context);
     }
 
-    public void start(List<BasicTask> tasks, DownloadCallback callback) {
-        getBinder(new GetBinderCallback() {
+    public void start(List<DownloadTask> tasks, String tasksTag, DownloadListener callback) {
+        mBeforeDownloadFilterChain.filter(tasks, new FilterCallback() {
             @Override
-            public void getBinder(DownloadService.DownloadBinder binder) {
-                mBinder.start(tasks, callback);
+            public void onContinue(List<DownloadTask> thisTasks) {
+                getBinder(new GetBinderCallback() {
+                    @Override
+                    public void getBinder(DownloadService.DownloadBinder binder) {
+                        mBinder.start(thisTasks, tasksTag, new DownloadListener() {
+
+                            @Override
+                            public void onError(String msg, int code) {
+                                callback.onError(msg, code);
+                            }
+
+                            @Override
+                            public void onComplete() {
+                                mAfterDownloadFilterChain.filter(tasks, new FilterCallback() {
+
+                                    @Override
+                                    public void onContinue(List<DownloadTask> tasks) {
+                                        callback.onComplete();
+                                    }
+
+                                    @Override
+                                    public void onInterrupt(String msg, int code) {
+                                        callback.onError(msg, code);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+
+            @Override
+            public void onInterrupt(String msg, int code) {
+                callback.onError(msg, code);
             }
         });
     }

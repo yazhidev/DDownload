@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.xiaoyu.download.DownloadTask;
 import com.xiaoyu.download.util.SpUtils;
 
 import java.util.HashMap;
@@ -15,7 +16,7 @@ import java.util.Map;
 
 public class TaskCenter {
 
-    private Map<String, BasicTask> mTasks = new HashMap<>();
+    private Map<String, DownloadTask> mTasks = new HashMap<>();
 
     private TaskCenter() {
     }
@@ -28,11 +29,13 @@ public class TaskCenter {
         SpUtils.init(context);
         String localTasks = SpUtils.getLocalTasks();
         if(!localTasks.isEmpty()) {
-            Map<String, BasicTask> tasks = (Map<String, BasicTask>)JSON.parseObject(localTasks, new TypeReference<Map<String, BasicTask>>(){});
-            for (Map.Entry<String, BasicTask> entry : tasks.entrySet()) {
+            stopAll();
+            mTasks.clear();
+            Map<String, DownloadTask> tasks = (Map<String, DownloadTask>)JSON.parseObject(localTasks, new TypeReference<Map<String, DownloadTask>>(){});
+            for (Map.Entry<String, DownloadTask> entry : tasks.entrySet()) {
                 entry.getValue().setCanceld(true);
-                BasicTask value = entry.getValue();
-                BasicTask basicTask = new BasicTask(value.getSavePath(), value.getDownloadUrl());
+                DownloadTask value = entry.getValue();
+                DownloadTask basicTask = new DownloadTask(value.getSavePath(), value.getDownloadUrl());
                 basicTask.setLength(value.getLength());
                 basicTask.setTotalLength(value.getTotalLength());
                 basicTask.setCanceld(true);
@@ -45,10 +48,10 @@ public class TaskCenter {
         return TaskCenter.TaskCenterHolder.INSTANCE;
     }
 
-    public void addTask(BasicTask task) {
+    public void addTask(DownloadTask task) {
         if(contains(task.getDownloadUrl())) {
             //获取之前缓存的需要的数据
-            BasicTask basicTask = get(task.getDownloadUrl());
+            DownloadTask basicTask = get(task.getDownloadUrl());
             task.setLength(basicTask.getLength());
             task.setTotalLength(basicTask.getTotalLength());
             task.setProgress(basicTask.getProgress());
@@ -78,7 +81,7 @@ public class TaskCenter {
         updateLocalData();
     }
 
-    public boolean isDownloading(BasicTask key) {
+    public boolean isDownloading(DownloadTask key) {
         return contains(key.getDownloadUrl()) && !get(key.getDownloadUrl()).isCanceld();
     }
 
@@ -86,11 +89,17 @@ public class TaskCenter {
         return mTasks.containsKey(key);
     }
 
-    public BasicTask get(String key) {
+    public DownloadTask get(String key) {
         return mTasks.get(key);
     }
 
-    public Map<String, BasicTask> getTasks() {
+    public Map<String, DownloadTask> getTasks() {
         return mTasks;
+    }
+
+    public void stopAll() {
+        for (Map.Entry<String, DownloadTask> entry : getTasks().entrySet()) {
+            entry.getValue().setCanceld(true);
+        }
     }
 }

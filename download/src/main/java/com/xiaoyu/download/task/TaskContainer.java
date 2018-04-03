@@ -1,5 +1,7 @@
 package com.xiaoyu.download.task;
 
+import com.xiaoyu.download.DownloadTask;
+
 import java.util.List;
 
 /**
@@ -8,14 +10,17 @@ import java.util.List;
 
 public class TaskContainer {
 
-    List<BasicTask> tasks;
+    private String mContainerTag;
+    List<DownloadTask> tasks;
     int lenghNum;
+    int progresshNum;
 
     long progress;
     volatile long length;
 
-    public TaskContainer(List<BasicTask> tasks) {
+    public TaskContainer(List<DownloadTask> tasks, String tag) {
         this.tasks = tasks;
+        this.mContainerTag = tag;
     }
 
     public long getProgress() {
@@ -35,9 +40,21 @@ public class TaskContainer {
         lenghNum++;
     }
 
-    //总长度是否计算完成
-    public boolean isLengthCompletion() {
-        return lenghNum == tasks.size();
+    public void addProgress(long progress) {
+        this.progress += progress;
+        progresshNum++;
     }
 
+    //总长度是否计算完成
+    public boolean isLengthCompletion() {
+        return lenghNum == tasks.size() && progresshNum == tasks.size();
+    }
+
+    public String getContainerTag() {
+        return mContainerTag;
+    }
+
+    public void setContainerTag(String containerTag) {
+        mContainerTag = containerTag;
+    }
 }

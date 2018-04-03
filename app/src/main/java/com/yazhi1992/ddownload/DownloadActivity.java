@@ -6,22 +6,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.xiaoyu.download.AppConstant;
-import com.xiaoyu.download.DownloadCallback;
+import com.xiaoyu.download.DownloadListener;
 import com.xiaoyu.download.DownloadTask;
+import com.xiaoyu.download.ProgressListener;
 import com.xiaoyu.download.XYDownload;
-import com.xiaoyu.download.task.BasicTask;
 import com.xiaoyu.download.task.TaskCenter;
 import com.xiaoyu.download.util.DownloadUtils;
 import com.yazhi1992.ddownload.databinding.ActivityDownloadBinding;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 public class DownloadActivity extends AppCompatActivity {
 
@@ -42,20 +37,11 @@ public class DownloadActivity extends AppCompatActivity {
         getFileSize(downloadTask, downloadTask2, downloadTask3);
 
         mBinding.btnStart.setOnClickListener(v -> {
-            List<BasicTask> list = new ArrayList<>();
+            List<DownloadTask> list = new ArrayList<>();
             list.add(downloadTask);
             list.add(downloadTask2);
             list.add(downloadTask3);
-            XYDownload.getInstance().start(list, new DownloadCallback() {
-                @Override
-                public void update(long progress, long total) {
-                    Log.e("zyz", "");
-                    int percent = (int) (progress * 100 / total);
-                    mModel.progress.set("进度：" + Integer.toString(percent) + "%");
-
-                    getFileSize(downloadTask, downloadTask2, downloadTask3);
-                }
-
+            XYDownload.getInstance().start(list, "test", new DownloadListener() {
                 @Override
                 public void onError(String msg, int code) {
                     Log.e("zyz", "onError");
@@ -67,6 +53,22 @@ public class DownloadActivity extends AppCompatActivity {
                     mModel.file1Size.set("下载完成，大小：" + DownloadUtils.transferSize(file.length()));
                 }
             });
+        });
+
+        XYDownload.getInstance().setProgressListener(new ProgressListener() {
+            @Override
+            public void taskProgress(String downloadUrl, long progress, long total) {
+
+            }
+
+            @Override
+            public void taskContainerProgress(String containerTag, long progress, long total) {
+                Log.e("zyz", "");
+                int percent = (int) (progress * 100 / total);
+                mModel.progress.set("进度：" + Integer.toString(percent) + "%");
+
+                getFileSize(downloadTask, downloadTask2, downloadTask3);
+            }
         });
 
         mBinding.btnPause.setOnClickListener(v -> {
@@ -85,28 +87,6 @@ public class DownloadActivity extends AppCompatActivity {
             TaskCenter.getInstance().removeAll();
             getFileSize(downloadTask, downloadTask2, downloadTask2);
         });
-    }
-
-    /**
-     * 得到下载内容的大小
-     * @param downloadUrl
-     * @return
-     */
-    private long getContentLength(String downloadUrl){
-        OkHttpClient client=new OkHttpClient();
-        Request request=new Request.Builder().url(downloadUrl).build();
-        try {
-            Response response=client.newCall(request).execute();
-            if(response!=null&&response.isSuccessful()){
-                long contentLength=response.body().contentLength();
-                response.body().close();
-                Log.e("zyz", "length" + contentLength);
-                return contentLength;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return  0;
     }
 
     private void deleteMyFile(String path) {

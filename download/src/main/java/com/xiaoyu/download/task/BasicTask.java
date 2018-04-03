@@ -14,7 +14,7 @@ public class BasicTask implements Serializable {
     protected String mSavePath;
     protected String mDownloadUrl;
     protected long mProgress;
-    protected long mLength;
+    protected long mLength; //本文件长度
     protected long mTotalLength;
 
     public BasicTask() {}

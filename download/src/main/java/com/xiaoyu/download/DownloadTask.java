@@ -8,6 +8,8 @@ import com.xiaoyu.download.task.BasicTask;
 
 public class DownloadTask extends BasicTask {
 
+    public DownloadTask() {}
+
     public DownloadTask(String savePath, String downloadUrl) {
         super(savePath, downloadUrl);
     }
