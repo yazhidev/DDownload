@@ -16,7 +16,7 @@ public class TaskContainer {
     int progresshNum;
 
     long progress;
-    volatile long length;
+    volatile long length; //文件
 
     public TaskContainer(List<DownloadTask> tasks, String tag) {
         this.tasks = tasks;
@@ -47,8 +47,10 @@ public class TaskContainer {
 
     //总长度是否计算完成
     public boolean isLengthCompletion() {
-        return lenghNum == tasks.size() && progresshNum == tasks.size();
+        return lenghNum >= tasks.size() && progresshNum >= tasks.size();
     }
+
+
 
     public String getContainerTag() {
         return mContainerTag;

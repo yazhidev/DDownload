@@ -37,7 +37,6 @@ public class TaskCenter {
                 DownloadTask value = entry.getValue();
                 DownloadTask basicTask = new DownloadTask(value.getSavePath(), value.getDownloadUrl());
                 basicTask.setLength(value.getLength());
-                basicTask.setTotalLength(value.getTotalLength());
                 basicTask.setCanceld(true);
                 mTasks.put(entry.getKey(), basicTask);
             }
@@ -53,7 +52,6 @@ public class TaskCenter {
             //获取之前缓存的需要的数据
             DownloadTask basicTask = get(task.getDownloadUrl());
             task.setLength(basicTask.getLength());
-            task.setTotalLength(basicTask.getTotalLength());
             task.setProgress(basicTask.getProgress());
             mTasks.put(task.getDownloadUrl(), task);
         }

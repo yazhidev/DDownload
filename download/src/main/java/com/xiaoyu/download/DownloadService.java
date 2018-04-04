@@ -55,15 +55,15 @@ public class DownloadService extends Service {
     public class DownloadBinder extends Binder {
 
         public void start(List<DownloadTask> tasks, String tasksTag, DownloadListener callback) {
-            final long[] total = {0};
-            final int[] num = {0};
+            final int[] num = {0}; //repeatWhen 接收到doOnComplete就会重复订阅。而我们只需要重复订阅一次。第一次遍历订阅用于获取文件总长度/已下载长度。第二次遍历订阅用于下载。
             TaskContainer taskContainer = new TaskContainer(tasks, tasksTag);
             Observable.fromIterable(tasks)
                     .observeOn(Schedulers.newThread())
                     .concatMap(new Function<DownloadTask, ObservableSource<DownloadTask>>() {
                         @Override
                         public ObservableSource<DownloadTask> apply(DownloadTask basicTask) throws Exception {
-                            return checkFinish(basicTask);
+                            //如果已下载，则跳过
+                            return checkFinish(basicTask, taskContainer);
                         }
                     })
                     .filter(new Predicate<DownloadTask>() {
@@ -76,19 +76,33 @@ public class DownloadService extends Service {
                     .concatMap(new Function<DownloadTask, ObservableSource<DownloadTask>>() {
                         @Override
                         public ObservableSource<DownloadTask> apply(DownloadTask basicTask) throws Exception {
-                            return getContentLength(basicTask, taskContainer);
+                            if(num[0] == 0) {
+                                return getContentLength(basicTask, taskContainer);
+                            } else {
+                                return Observable.just(basicTask);
+                            }
                         }
                     })
                     .concatMap(new Function<DownloadTask, ObservableSource<DownloadTask>>() {
                         @Override
                         public ObservableSource<DownloadTask> apply(DownloadTask downloadTask) throws Exception {
-                            return getDownloadLength(downloadTask, taskContainer);
+                            if(num[0] == 0) {
+                                return getDownloadedLength(downloadTask, taskContainer);
+                            } else {
+                                return Observable.just(downloadTask);
+                            }
                         }
                     })
+                    .observeOn(Schedulers.io())
                     .concatMap(new Function<DownloadTask, ObservableSource<DownloadTask>>() {
                         @Override
                         public ObservableSource<DownloadTask> apply(DownloadTask basicTask) throws Exception {
-                            return download(basicTask, taskContainer, callback);
+                            if(num[0] == 1) {
+                                //获取完总任务进度后开始下载（否则总进度回调异常）
+                                return download(basicTask, num[0], taskContainer, callback);
+                            } else {
+                                return Observable.just(basicTask);
+                            }
                         }
                     })
                     .doOnComplete(new Action() {
@@ -96,7 +110,7 @@ public class DownloadService extends Service {
                         public void run() throws Exception {
                             //第一次回调在获取完所有文件大小后
                             //第二次回调在下载完所有文件后
-                            if(num[0] == 1) {
+                            if (num[0] == 1) {
                                 callback.onComplete();
                             }
                         }
@@ -107,9 +121,8 @@ public class DownloadService extends Service {
                             return objectObservable.takeWhile(new Predicate<Object>() {
                                 @Override
                                 public boolean test(Object o) throws Exception {
-                                    //获取完所有大小后，重新订阅一次逐个下载
                                     num[0]++;
-                                    return num[0] == 1;
+                                    return num[0] == 1; //只需要重复订阅一次
                                 }
                             });
                         }
@@ -131,7 +144,7 @@ public class DownloadService extends Service {
             TaskCenter.getInstance().stopAll();
         }
 
-        private Observable<DownloadTask> checkFinish(DownloadTask task) {
+        private Observable<DownloadTask> checkFinish(DownloadTask task, TaskContainer taskContainer) {
             return Observable.create(new ObservableOnSubscribe<DownloadTask>() {
                 @Override
                 public void subscribe(ObservableEmitter<DownloadTask> emitter) throws Exception {
@@ -148,24 +161,18 @@ public class DownloadService extends Service {
             });
         }
 
-        private Observable<DownloadTask> download(DownloadTask task, TaskContainer taskContainer, DownloadListener callback) {
+        private Observable<DownloadTask> download(DownloadTask task, int num, TaskContainer taskContainer, DownloadListener callback) {
             return Observable.create(new ObservableOnSubscribe<DownloadTask>() {
                 @Override
                 public void subscribe(ObservableEmitter<DownloadTask> emitter) throws Exception {
-                    if(task.getTotalLength() == 0) emitter.onComplete();
+                    //继续下一个下载任务
+                    emitter.onNext(task);
                     task.setCanceld(false);
                     TaskCenter.getInstance().addTask(task);
 //            mTasks.get(task.getDownloadUrl()).addLength(getContentLength(task.getDownloadUrl()));
                     // retrofit   @Streaming/*大文件需要加入这个判断，防止下载过程中写入到内存中*/
+                    long length = task.getProgress();
                     File tempFile = new File(task.getTempFilePath());
-                    if (!tempFile.getParentFile().exists())
-                        tempFile.getParentFile().mkdirs();
-
-                    long length = 0;
-                    if (tempFile.exists()) {
-                        length = tempFile.length();
-                    }
-
                     Request request = new Request.Builder()
                             .addHeader("RANGE", "bytes=" + length + "-")
                             .url(task.getDownloadUrl()).build();
@@ -194,7 +201,7 @@ public class DownloadService extends Service {
                                 taskContainer.setProgress(taskContainer.getProgress() + len);
                                 task.setProgress(progress);
                                 //进度回调
-                                if(XYDownload.getInstance().getProgressListener() != null) {
+                                if (XYDownload.getInstance().getProgressListener() != null) {
                                     XYDownload.getInstance().getProgressListener().taskProgress(task.getDownloadUrl(), task.getProgress(), task.getLength());
                                     if (taskContainer.isLengthCompletion() && taskContainer.getLength() != 0) {
                                         XYDownload.getInstance().getProgressListener().taskContainerProgress(taskContainer.getContainerTag(), taskContainer.getProgress(), taskContainer.getLength());
@@ -208,10 +215,9 @@ public class DownloadService extends Service {
                                 //任务完成，移除任务
                                 TaskCenter.getInstance().removeTask(task.getDownloadUrl());
                             }
-                            emitter.onNext(task);
-                            emitter.onComplete();
                         }
                     });
+                    emitter.onComplete();
                 }
             });
         }
@@ -222,11 +228,12 @@ public class DownloadService extends Service {
          * @return
          */
         private Observable<DownloadTask> getContentLength(DownloadTask task, TaskContainer taskContainer) {
-            if (task.getLength() == 0) {
-                return Observable.create(new ObservableOnSubscribe<DownloadTask>() {
-                    @Override
-                    public void subscribe(ObservableEmitter<DownloadTask> emitter) throws Exception {
-                        Log.e("zyz", "getContent");
+            //新下载任务，需要先获取文件长度
+            return Observable.create(new ObservableOnSubscribe<DownloadTask>() {
+                @Override
+                public void subscribe(ObservableEmitter<DownloadTask> emitter) throws Exception {
+                    Log.e("zyz", "getContent");
+                    if (task.getLength() == 0) {
                         Request request = new Request.Builder().url(task.getDownloadUrl()).build();
                         try {
                             Response response = mOkHttpClient.newCall(request).execute();
@@ -243,12 +250,14 @@ public class DownloadService extends Service {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+                    } else {
+                        //如果是已添加过的任务，则已知文件长度
+                        taskContainer.addLength(task.getLength());
+                        emitter.onNext(task);
+                        emitter.onComplete();
                     }
-                });
-            } else {
-                taskContainer.addLength(task.getLength());
-                return Observable.just(task);
-            }
+                }
+            });
         }
 
         /**
@@ -256,12 +265,12 @@ public class DownloadService extends Service {
          *
          * @return
          */
-        private Observable<DownloadTask> getDownloadLength(DownloadTask task, TaskContainer taskContainer) {
-            if (taskContainer.isLengthCompletion()) {
-                return Observable.create(new ObservableOnSubscribe<DownloadTask>() {
-                    @Override
-                    public void subscribe(ObservableEmitter<DownloadTask> emitter) throws Exception {
-                        Log.e("zyz", "getDownloadLength");
+        private Observable<DownloadTask> getDownloadedLength(DownloadTask task, TaskContainer taskContainer) {
+            return Observable.create(new ObservableOnSubscribe<DownloadTask>() {
+                @Override
+                public void subscribe(ObservableEmitter<DownloadTask> emitter) throws Exception {
+                    Log.e("zyz", "getDownloadedLength");
+                    if (task.getProgress() == 0) {
                         File tempFile = new File(task.getTempFilePath());
                         if (!tempFile.getParentFile().exists())
                             tempFile.getParentFile().mkdirs();
@@ -269,14 +278,13 @@ public class DownloadService extends Service {
                         if (tempFile.exists()) {
                             length = tempFile.length();
                         }
-                        taskContainer.addProgress(length);
-                        emitter.onNext(task);
-                        emitter.onComplete();
+                        task.setProgress(length);
                     }
-                });
-            } else {
-                return Observable.just(task);
-            }
+                    taskContainer.addProgress(task.getProgress());
+                    emitter.onNext(task);
+                    emitter.onComplete();
+                }
+            });
         }
 
     }
