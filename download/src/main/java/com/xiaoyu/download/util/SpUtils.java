@@ -19,6 +19,7 @@ public class SpUtils {
     }
 
     public static void saveTasksToLocal(String tasksInfo) {
+        if(sPreferences == null) throw new InitException();
         SharedPreferences.Editor edit = sPreferences.edit();
         edit.putString(DOWNLOAD_TASK, tasksInfo);
         edit.commit();

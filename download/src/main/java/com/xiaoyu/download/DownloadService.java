@@ -130,12 +130,10 @@ public class DownloadService extends Service {
                     .subscribe(new Consumer<DownloadTask>() {
                         @Override
                         public void accept(DownloadTask basicTask) throws Exception {
-                            Log.e("zyz", "subscribe");
                         }
                     }, new Consumer<Throwable>() {
                         @Override
                         public void accept(Throwable throwable) throws Exception {
-                            Log.e("zyz", "start download error:" + throwable.getMessage());
                         }
                     });
         }
@@ -150,10 +148,8 @@ public class DownloadService extends Service {
                 public void subscribe(ObservableEmitter<DownloadTask> emitter) throws Exception {
                     File file = new File(task.getSavePath());
                     if (file.exists()) {
-//                        Log.e("zyz", "checkFinish exists");
                         emitter.onComplete();
                     } else {
-//                        Log.e("zyz", "checkFinish");
                         emitter.onNext(task);
                         emitter.onComplete();
                     }
@@ -169,15 +165,12 @@ public class DownloadService extends Service {
                     emitter.onNext(task);
                     task.setCanceld(false);
                     TaskCenter.getInstance().addTask(task);
-//            mTasks.get(task.getDownloadUrl()).addLength(getContentLength(task.getDownloadUrl()));
-                    // retrofit   @Streaming/*大文件需要加入这个判断，防止下载过程中写入到内存中*/
                     long length = task.getProgress();
                     File tempFile = new File(task.getTempFilePath());
                     Request request = new Request.Builder()
                             .addHeader("RANGE", "bytes=" + length + "-")
                             .url(task.getDownloadUrl()).build();
                     long finalLength = length;
-                    Log.e("zyz", "length " + finalLength);
                     mOkHttpClient.newCall(request).enqueue(new Callback() {
                         @Override
                         public void onFailure(Call call, IOException e) {
@@ -189,7 +182,6 @@ public class DownloadService extends Service {
                         public void onResponse(Call call, Response response) throws IOException {
                             RandomAccessFile rwd = new RandomAccessFile(tempFile, "rwd");
                             rwd.seek(finalLength);
-//                            Log.e("zyz", "start " + task.getLength() + " " + DownloadUtils.transferSize(task.getLength()) + " randomLength " + DownloadUtils.transferSize(finalLength) + " total " + DownloadUtils.transferSize(taskContainer.getLength()));
                             InputStream is = response.body().byteStream();
                             byte[] buffer = new byte[1024 * 8];
                             int len = -1;
@@ -232,7 +224,6 @@ public class DownloadService extends Service {
             return Observable.create(new ObservableOnSubscribe<DownloadTask>() {
                 @Override
                 public void subscribe(ObservableEmitter<DownloadTask> emitter) throws Exception {
-                    Log.e("zyz", "getContent");
                     if (task.getLength() == 0) {
                         Request request = new Request.Builder().url(task.getDownloadUrl()).build();
                         try {
@@ -269,7 +260,6 @@ public class DownloadService extends Service {
             return Observable.create(new ObservableOnSubscribe<DownloadTask>() {
                 @Override
                 public void subscribe(ObservableEmitter<DownloadTask> emitter) throws Exception {
-                    Log.e("zyz", "getDownloadedLength");
                     if (task.getProgress() == 0) {
                         File tempFile = new File(task.getTempFilePath());
                         if (!tempFile.getParentFile().exists())

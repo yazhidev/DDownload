@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
-import com.xiaoyu.download.AppConstant;
 import com.xiaoyu.download.DownloadListener;
 import com.xiaoyu.download.DownloadTask;
 import com.xiaoyu.download.ProgressListener;

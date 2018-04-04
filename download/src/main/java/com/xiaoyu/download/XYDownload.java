@@ -9,6 +9,8 @@ import android.os.IBinder;
 import com.xiaoyu.download.filter.FilterCallback;
 import com.xiaoyu.download.filter.FilterChain;
 import com.xiaoyu.download.filter.IFilter;
+import com.xiaoyu.download.task.TaskCenter;
+import com.xiaoyu.download.util.InitException;
 
 import java.util.List;
 
@@ -57,6 +59,7 @@ public class XYDownload {
 
     public void init(Context context) {
         mContext = context;
+        TaskCenter.getInstance().init(context);
     }
 
     public void start(List<DownloadTask> tasks, String tasksTag, DownloadListener callback) {
@@ -114,6 +117,7 @@ public class XYDownload {
     }
 
     private void getBinder(GetBinderCallback callback) {
+        if(mContext == null) throw new InitException();
         if (mBinder == null) {
             Intent intent = new Intent(mContext, DownloadService.class);
             mContext.startService(intent);
@@ -133,4 +137,5 @@ public class XYDownload {
         }
         callback.getBinder(mBinder);
     }
+
 }
