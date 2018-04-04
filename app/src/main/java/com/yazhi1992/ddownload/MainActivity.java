@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 
-import com.xiaoyu.download.XYDownload;
 import com.yazhi1992.ddownload.databinding.ActivityMainBinding;
 
 import permissions.dispatcher.NeedsPermission;
@@ -29,9 +28,6 @@ public class MainActivity extends AppCompatActivity {
 
     @NeedsPermission({Manifest.permission.INTERNET, Manifest.permission.WRITE_EXTERNAL_STORAGE})
     void gotoDownload() {
-
-        XYDownload.getInstance().init(getApplication());
-
         startActivity(new Intent(MainActivity.this, DownloadActivity.class));
     }
 

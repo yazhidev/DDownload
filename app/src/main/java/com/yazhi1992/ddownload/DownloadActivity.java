@@ -5,13 +5,13 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
-import com.xiaoyu.download.DownloadListener;
-import com.xiaoyu.download.DownloadTask;
-import com.xiaoyu.download.ProgressListener;
-import com.xiaoyu.download.XYDownload;
-import com.xiaoyu.download.task.TaskCenter;
-import com.xiaoyu.download.util.DownloadUtils;
 import com.yazhi1992.ddownload.databinding.ActivityDownloadBinding;
+import com.yazhi1992.download.DownloadListener;
+import com.yazhi1992.download.DownloadTask;
+import com.yazhi1992.download.ProgressListener;
+import com.yazhi1992.download.XYDownload;
+import com.yazhi1992.download.task.TaskCenter;
+import com.yazhi1992.download.util.DownloadUtils;
 
 import java.io.File;
 import java.util.ArrayList;
