@@ -6,10 +6,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.yazhi1992.ddownload.databinding.ActivityDownloadBinding;
+import com.yazhi1992.download.DDownload;
 import com.yazhi1992.download.DownloadListener;
 import com.yazhi1992.download.DownloadTask;
 import com.yazhi1992.download.ProgressListener;
-import com.yazhi1992.download.XYDownload;
 import com.yazhi1992.download.task.TaskCenter;
 import com.yazhi1992.download.util.DownloadUtils;
 
@@ -40,7 +40,7 @@ public class DownloadActivity extends AppCompatActivity {
             list.add(downloadTask);
             list.add(downloadTask2);
             list.add(downloadTask3);
-            XYDownload.getInstance().start(list, "test", new DownloadListener() {
+            DDownload.getInstance().start(list, "test", new DownloadListener() {
                 @Override
                 public void onError(String msg, int code) {
                     Log.e("zyz", "onError");
@@ -54,7 +54,7 @@ public class DownloadActivity extends AppCompatActivity {
             });
         });
 
-        XYDownload.getInstance().setProgressListener(new ProgressListener() {
+        DDownload.getInstance().setProgressListener(new ProgressListener() {
             @Override
             public void taskProgress(String downloadUrl, long progress, long total) {
 
@@ -72,7 +72,7 @@ public class DownloadActivity extends AppCompatActivity {
 
         mBinding.btnPause.setOnClickListener(v -> {
             getFileSize(downloadTask, downloadTask2, downloadTask2);
-            XYDownload.getInstance().stopAll();
+            DDownload.getInstance().stopAll();
         });
 
         mBinding.btnDelete.setOnClickListener(v -> {

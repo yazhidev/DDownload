@@ -2,7 +2,7 @@ package com.yazhi1992.ddownload;
 
 import android.app.Application;
 
-import com.yazhi1992.download.XYDownload;
+import com.yazhi1992.download.DDownload;
 
 
 /**
@@ -14,6 +14,6 @@ public class BaseApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        XYDownload.getInstance().init(this);
+        DDownload.getInstance().init(this);
     }
 }
