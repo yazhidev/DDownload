@@ -19,8 +19,8 @@ DDownload.getInstance().init(this);
 后过滤器用于下载后如果是压缩文件则解压，因为过滤器可以修改对应的 task，故可以用解压后的文件地址替换掉原压缩文件地址，使调用者无需关心解压操作。
 
 ```
-XYDownload.getInstance().addAfterDownloadFilter(new AfterDownloadGZipFilter());
-XYDownload.getInstance().addBeforeDownloadFilter(new BeforeDownloadCheckNetStateFilter());
+DDownload.getInstance().addAfterDownloadFilter(new AfterDownloadGZipFilter());
+DDownload.getInstance().addBeforeDownloadFilter(new BeforeDownloadCheckNetStateFilter());
 ```
 
 ## 下载
