@@ -19,6 +19,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
@@ -104,6 +105,7 @@ public class DownloadService extends Service {
                             }
                         }
                     })
+                    .observeOn(AndroidSchedulers.mainThread())
                     .doOnComplete(new Action() {
                         @Override
                         public void run() throws Exception {
@@ -114,6 +116,7 @@ public class DownloadService extends Service {
                             }
                         }
                     })
+                    .observeOn(Schedulers.newThread())
                     .repeatWhen(new Function<Observable<Object>, ObservableSource<?>>() {
                         @Override
                         public ObservableSource<?> apply(Observable<Object> objectObservable) throws Exception {
@@ -206,9 +209,9 @@ public class DownloadService extends Service {
                                 //任务完成，移除任务
                                 TaskCenter.getInstance().removeTask(task.getDownloadUrl());
                             }
+                            emitter.onComplete();
                         }
                     });
-                    emitter.onComplete();
                 }
             });
         }
